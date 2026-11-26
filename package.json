@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "photos": "node scripts/photos.mjs",
+    "cutout": "swift scripts/cutout.swift",
     "predev": "node scripts/photos.mjs",
     "dev": "astro dev",
     "prebuild": "node scripts/photos.mjs",

@@ -50,22 +50,22 @@ Every face goes through the same treatment automatically: black and white, halft
 a white sticker border. So you only need to supply **a PNG of the person with the background
 removed**:
 
-1. **Pick a photo:** face toward the camera, head and shoulders, decent light. Colour is fine.
-2. **Remove the background**, any of these:
-   - **iPhone:** open the photo, press and hold the person → **Copy** (or Share → Save Image),
-     then AirDrop or save it as PNG.
-   - **Mac:** right-click the image in Finder → **Quick Actions → Remove Background**.
-   - **Anywhere:** remove.bg (download the PNG).
-3. **Crop it** from roughly mid-chest up, with a **flat cut at the bottom** (the cutouts sit on
-   paper labels, so a straight bottom edge looks best). Leave the top of the head uncropped.
-4. Save it as `photos/<id>.png`, e.g. `photos/priya.png`, and commit.
+1. **Pick a photo:** face toward the camera, head and shoulders visible, decent light.
+   Colour is fine. Don't crop the top of their head off.
+2. **Cut them out.** On a Mac, one command does it (uses macOS's built-in subject lifting):
+   ```bash
+   npm run cutout -- ~/Downloads/priya.jpg priya
+   ```
+   That writes `photos/priya.png`. Works with JPG, PNG and HEIC.
+   Other ways: on iPhone, press and hold the person in the photo → **Copy**/Share; in Finder,
+   right-click → **Quick Actions → Remove Background**; or remove.bg. Save the result as
+   `photos/<id>.png`.
+3. Commit it.
 
 `scripts/photos.mjs` runs before every build. It trims the empty space around the person,
-resizes huge phone images, and writes the result to `public/players/`. JPG and HEIC can't be
-see-through, so they're skipped with a warning.
-
-> `photos/jacob.png` is a drawn test image showing how a real photo is treated. Replace it
-> with a real one.
+crops to head and shoulders with a flat bottom edge, shrinks huge phone photos, and writes the
+result to `public/players/`. JPG and HEIC files in `photos/` are skipped with a warning because
+they can't have a see-through background (run `npm run cutout` on them first).
 
 ## Run it on your computer
 

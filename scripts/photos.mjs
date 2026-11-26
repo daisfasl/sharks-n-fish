@@ -1,6 +1,7 @@
 // Turns whatever is in photos/ into consistent cutouts in public/players/.
 //   photos/jacob.png  ->  public/players/jacob.png
 // - trims the empty transparent space around the person (so every cutout sits the same way)
+// - crops to head and shoulders with a flat bottom edge
 // - shrinks big phone photos down to 720px tall
 // - keeps the transparent background (PNG)
 // The black-and-white, halftone and white sticker border are added by CSS, so the
@@ -11,6 +12,7 @@ import path from 'node:path';
 
 const SRC = 'photos';
 const OUT = 'public/players';
+const HEAD_AND_SHOULDERS = 1.05; // max height as a multiple of width
 fs.mkdirSync(OUT, { recursive: true });
 
 const files = fs.existsSync(SRC) ? fs.readdirSync(SRC).filter(f => /\.(png|webp)$/i.test(f)) : [];
@@ -31,8 +33,11 @@ for (const f of files) {
   if (!meta.hasAlpha) {
     console.warn(`! photos/${f} has no transparent background, so it will show as a rectangle. Remove the background first.`);
   }
-  await img
-    .trim({ threshold: 10 })
+  const { data, info } = await img.trim({ threshold: 10 }).png().toBuffer({ resolveWithObject: true });
+  // keep head + shoulders: anything taller than ~square gets a flat cut across the chest
+  const maxH = Math.round(info.width * HEAD_AND_SHOULDERS);
+  await sharp(data)
+    .extract({ left: 0, top: 0, width: info.width, height: Math.min(info.height, maxH) })
     .resize({ height: 720, withoutEnlargement: true })
     .png({ compressionLevel: 9, palette: false })
     .toFile(out);
