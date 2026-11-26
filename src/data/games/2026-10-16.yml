@@ -1,0 +1,10 @@
+date: 2026-10-16
+host: marcus
+stakes: "0.25/0.50"
+notes: "Marcus hit a runner-runner flush and would not stop talking about it."
+results:
+  - { player: marcus, buyin: 40, cashout: 102 }
+  - { player: sam, buyin: 60, cashout: 18 }
+  - { player: lena, buyin: 40, cashout: 51 }
+  - { player: dev, buyin: 40, cashout: 9 }
+  - { player: jacob, buyin: 40, cashout: 40 }

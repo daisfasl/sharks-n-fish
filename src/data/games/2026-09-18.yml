@@ -1,0 +1,10 @@
+date: 2026-09-18
+host: jacob
+stakes: "0.25/0.50"
+notes: "First official game. Alex went all in on a gutshot and missed. Twice."
+results:
+  - { player: jacob, buyin: 40, cashout: 75 }
+  - { player: priya, buyin: 40, cashout: 52 }
+  - { player: alex, buyin: 40, cashout: 0 }
+  - { player: marcus, buyin: 40, cashout: 47 }
+  - { player: sam, buyin: 40, cashout: 26 }

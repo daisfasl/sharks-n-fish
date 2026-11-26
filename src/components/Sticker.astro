@@ -1,0 +1,66 @@
+---
+// Collage stickers: vintage-print shark & fish, hooks, chips, cards, dice.
+interface Props {
+  kind: 'shark' | 'fish' | 'hook' | 'fin' | 'minifish' | 'chip' | 'card' | 'die';
+  class?: string; style?: string;
+  color?: string; label?: string; suit?: string; rank?: string; pips?: number;
+}
+const { kind, class: cls = '', style = '', color = '#D7261E', label = '', suit = '♠', rank = 'A', pips = 5 } = Astro.props;
+const red = suit === '♥' || suit === '♦';
+const PIPS: Record<number, number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+---
+{kind === 'shark' && (
+  <svg class={`stk shark ${cls}`} style={style} viewBox="0 0 220 100" aria-hidden="true">
+    <path d="M8 56 C20 44 50 36 92 34 L112 6 C118 18 124 28 136 36 C160 38 180 40 196 34 L214 10 C210 30 206 44 204 52 L216 82 C200 70 186 64 172 64 C160 68 150 70 140 70 L128 86 L124 70 C112 72 100 72 92 72 L70 94 L72 72 C50 70 26 66 8 56 Z" fill="url(#htSea)" stroke="#0e2630" stroke-width="2" stroke-linejoin="round" />
+    <path d="M14 59 C40 66 80 70 140 68 C110 63 60 61 14 59 Z" fill="#E9E4D8" />
+    <circle cx="30" cy="50" r="3.2" fill="#0e0e0e" />
+    <path d="M54 44 C57 50 57 56 54 62 M60 43 C63 50 63 56 60 63 M66 43 C69 50 69 56 66 63" stroke="#0e2630" stroke-width="1.8" fill="none" stroke-linecap="round" />
+    <path d="M13 60 C22 64 32 64 40 61" stroke="#0e2630" stroke-width="1.8" fill="none" stroke-linecap="round" />
+  </svg>
+)}
+{kind === 'fish' && (
+  <svg class={`stk fish ${cls}`} style={style} viewBox="0 0 180 90" aria-hidden="true">
+    <path d="M126 45 L170 13 C164 28 162 36 162 45 C162 54 164 62 170 77 Z" fill={color} stroke="#3a0e0b" stroke-width="2" stroke-linejoin="round" />
+    <path d="M52 20 C68 2 96 4 106 24 Z" fill={color} stroke="#3a0e0b" stroke-width="2" stroke-linejoin="round" />
+    <path d="M8 45 C30 8 100 4 132 42 C100 84 30 82 8 45 Z" fill={color} stroke="#3a0e0b" stroke-width="2" />
+    <path d="M8 45 C30 8 100 4 132 42 C100 84 30 82 8 45 Z" fill="url(#htOver)" />
+    <path d="M60 30 q6 6 0 12 M74 26 q6 8 0 16 M88 28 q6 8 0 16 M66 48 q6 6 0 12 M80 46 q6 8 0 16 M94 46 q5 7 0 14" stroke="#3a0e0b" stroke-width="1.4" fill="none" opacity=".55" />
+    <path d="M46 24 C40 38 40 52 46 66" stroke="#3a0e0b" stroke-width="2" fill="none" />
+    <circle cx="28" cy="40" r="7" fill="#F6F1E6" stroke="#3a0e0b" stroke-width="1.8" />
+    <circle cx="27" cy="40" r="3.4" fill="#111" />
+    <path d="M8 45 L18 47" stroke="#3a0e0b" stroke-width="2" stroke-linecap="round" />
+  </svg>
+)}
+{kind === 'hook' && (
+  <svg class={`stk hook ${cls}`} style={style} viewBox="0 0 60 200" aria-hidden="true">
+    <line x1="30" y1="0" x2="30" y2="112" stroke="#F6F1E6" stroke-width="1.6" opacity=".85" />
+    <circle cx="30" cy="117" r="5" fill="none" stroke="#2b2b2b" stroke-width="3.5" />
+    <path d="M30 122 L30 170 C30 194 6 194 7 172 L15 180" stroke="#2b2b2b" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M32 126 L32 166" stroke="#9a9a9a" stroke-width="1.5" stroke-linecap="round" />
+  </svg>
+)}
+{kind === 'fin' && (
+  <svg class={`stk icon ${cls}`} style={style} viewBox="0 0 32 24" aria-hidden="true">
+    <path d="M3 19 C12 17 15 9 17 2 C20 10 24 16 30 19 Z" fill="currentColor" />
+    <path d="M1 21 q4 -3 8 0 t8 0 t8 0 t7 0" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" />
+  </svg>
+)}
+{kind === 'minifish' && (
+  <svg class={`stk icon ${cls}`} style={style} viewBox="0 0 32 20" aria-hidden="true">
+    <path d="M2 10 C8 1 20 1 24 10 C20 19 8 19 2 10 Z M23 10 L31 4 L29 10 L31 16 Z" fill="currentColor" />
+    <circle cx="8" cy="9" r="1.6" fill="#F6F1E6" />
+  </svg>
+)}
+{kind === 'chip' && (
+  <div class={`stk chip ${cls}`} style={`--c:${color};${style}`} aria-hidden="true"><b>{label}</b></div>
+)}
+{kind === 'card' && (
+  <div class={`stk pcard ${red ? 'red' : ''} ${cls}`} style={style} aria-hidden="true">
+    <div class="c">{rank}<br />{suit}</div><div class="big">{suit}</div>
+  </div>
+)}
+{kind === 'die' && (
+  <div class={`stk die ${cls}`} style={style} aria-hidden="true">
+    {Array.from({ length: 9 }, (_, i) => <i class={PIPS[pips].includes(i) ? '' : 'x'} />)}
+  </div>
+)}

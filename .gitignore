@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+# generated from photos/ by scripts/photos.mjs on every build
+public/players/
+.DS_Store
+
+# local-only files
+mockup.html
+.claude/

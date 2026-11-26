@@ -1,0 +1,141 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Ransom from '../components/Ransom.astro';
+import Cutout from '../components/Cutout.astro';
+import Dymo from '../components/Dymo.astro';
+import Sticker from '../components/Sticker.astro';
+import GameCard from '../components/GameCard.astro';
+import PlayerDialog from '../components/PlayerDialog.astro';
+import { fish, games, playerById, season, shark, stats } from '../lib/data';
+import { fmtDate, money, pct, tilt, torn } from '../lib/paper';
+
+const best = season.bestNight, worst = season.worstNight;
+---
+<Layout>
+  <div class="page">
+    <header class="mast">
+      <div class="scatter" aria-hidden="true">
+        <Sticker kind="shark" class="deco" style="--r:-8deg;left:-2%;top:30px;width:190px" />
+        <Sticker kind="chip" color="#D7261E" label="♠" class="deco hide-sm" style="--r:-12deg;left:8%;top:150px;--s:70px" />
+        <Sticker kind="card" rank="A" suit="♠" class="deco hide-sm" style="--r:-16deg;left:1%;top:200px;--w:72px" />
+        <Sticker kind="fish" color="#C9A24A" class="deco" style="--r:10deg;right:-1%;top:24px;width:150px;transform:rotate(var(--r)) scaleX(-1)" />
+        <Sticker kind="die" pips={5} class="deco hide-sm" style="--r:14deg;right:9%;top:150px" />
+        <Sticker kind="chip" color="#17394A" label="♣" class="deco hide-sm" style="--r:20deg;right:1%;top:215px;--s:62px" />
+      </div>
+      <Ransom text="SHARKS N FISH" />
+      <p class="bubble-row"><span class="bubble">r u a poker shark or fish?</span></p>
+      {season.games > 0 && (
+        <div class="ticker">
+          <span>{season.games} games logged</span>
+          <span>${season.moved} changed hands</span>
+          <span>Biggest pot: <em>${season.biggestPot}</em></span>
+          {best && <span>Best night: <em>{playerById.get(best.player)!.name} {money(best.net)}</em></span>}
+          {worst && <span>Worst night: <em>{playerById.get(worst.player)!.name} {money(worst.net)}</em></span>}
+        </div>
+      )}
+      <nav class="tabs">
+        <a href="#leaderboard" style={`--r:-2deg;${torn('tab1', 'tblr', 4)}`}>Leaderboard</a>
+        <a href="#games" style={`--r:1.5deg;${torn('tab2', 'tblr', 4)}`}>Game History</a>
+      </nav>
+    </header>
+
+    <section id="leaderboard">
+      <div class="sec-head"><span class="ring sea"><Sticker kind="fin" /></span><h2>The Leaderboard</h2></div>
+
+      <div class="tanks">
+        {shark && (
+          <div class="sh" style="--r:-1deg">
+            <button type="button" class="tank shark" data-player={shark.player.id} style={torn('tank-shark', 'tblr', 10)}>
+              <span class="bigword">SHARK</span>
+              <Sticker kind="shark" class="swim" />
+              <span class="tank-art"><Cutout player={shark.player} eager /></span>
+              <span class="plinth" style={torn('plinth-shark', 't', 7)}>
+                <span class="role">Top earner</span>
+                <span class="nm">{shark.player.name}</span>
+                <Dymo n={shark.total} />
+              </span>
+              <span class="stamp sea">Apex predator</span>
+            </button>
+          </div>
+        )}
+        {fish && (
+          <div class="sh" style="--r:1.2deg">
+            <button type="button" class="tank fish" data-player={fish.player.id} style={torn('tank-fish', 'tblr', 10)}>
+              <span class="bigword">FISH</span>
+              <Sticker kind="hook" class="dangle" />
+              <Sticker kind="fish" class="swim" color="#C9A24A" />
+              <span class="tank-art"><Cutout player={fish.player} eager /></span>
+              <span class="plinth" style={torn('plinth-fish', 't', 7)}>
+                <span class="role">Biggest donor</span>
+                <span class="nm">{fish.player.name}</span>
+                <Dymo n={fish.total} />
+              </span>
+              <span class="stamp">Catch of the day</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <ol class="ranks">
+        {stats.map((s, i) => (
+          <li class="sh" style={`--r:${tilt('row' + s.player.id, 0.8)}`}>
+            <button type="button" class={`rank-row v${i % 3}`} data-player={s.player.id} style={torn('row' + s.player.id, 'tb', 5)}>
+              <span class="rnum">{String(s.rank).padStart(2, '0')}</span>
+              <span class="mini"><Cutout player={s.player} /></span>
+              <span class="who">
+                <span class="nm">{s.player.name}
+                  <span class={`tag ${s.total >= 0 ? 'shark-tag' : 'fish-tag'}`} title={s.total >= 0 ? 'Shark' : 'Fish'}>
+                    <Sticker kind={s.total >= 0 ? 'fin' : 'minifish'} />
+                  </span>
+                </span>
+                {s.player.nickname && <span class="nk">“{s.player.nickname}”</span>}
+              </span>
+              <span class="meta">{s.gp} games · ROI {pct(s.roi)}<br />{s.winRate}% wins · streak {s.streak}</span>
+              <Dymo n={s.total} />
+              {s === shark && <span class="stamp sea">Shark</span>}
+              {s === fish && <span class="stamp">Fish</span>}
+            </button>
+          </li>
+        ))}
+      </ol>
+      <p class="hint">Tap a player to open their file.</p>
+    </section>
+
+    <section id="games">
+      <div class="sec-head"><span class="ring"><Sticker kind="minifish" /></span><h2>Game History</h2></div>
+      <div class="games">
+        {[...games].reverse().map(g => <GameCard game={g} />)}
+      </div>
+    </section>
+
+    <footer>
+      <span>Sharks n Fish</span>
+      {season.lastDate && <span>Last game {fmtDate(season.lastDate)}</span>}
+    </footer>
+  </div>
+
+  {stats.map(s => <PlayerDialog s={s} count={stats.length} />)}
+
+  <script>
+    const open = (id: string) => {
+      const d = document.getElementById('p-' + id) as HTMLDialogElement | null;
+      if (!d) return;
+      document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(x => x.close());
+      d.showModal();
+      d.scrollTop = 0;
+      history.replaceState(null, '', '#' + id);
+    };
+    document.addEventListener('click', e => {
+      const el = e.target as HTMLElement;
+      const trigger = el.closest<HTMLElement>('[data-player]');
+      if (trigger && !trigger.closest('dialog')) return open(trigger.dataset.player!);
+      const d = el.closest('dialog');
+      if (d && (el === d || el.closest('[data-close]'))) d.close();
+    });
+    document.querySelectorAll('dialog').forEach(d =>
+      d.addEventListener('close', () => history.replaceState(null, '', location.pathname + location.search)),
+    );
+    // links like yoursite.com/#jacob open straight to that player's file
+    if (location.hash.length > 1) open(decodeURIComponent(location.hash.slice(1)));
+  </script>
+</Layout>

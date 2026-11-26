@@ -1,0 +1,79 @@
+---
+// Pop-up player file: their face card + stats sheet. Opens when a player is clicked.
+import type { Stats } from '../lib/data';
+import { fish, shark } from '../lib/data';
+import { fmtDate, hash, money, pad3, pct, rng, sign, torn } from '../lib/paper';
+import Cutout from './Cutout.astro';
+import Dymo from './Dymo.astro';
+
+interface Props { s: Stats; count: number }
+const { s, count } = Astro.props;
+const p = s.player;
+const RANKS = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
+const rank = RANKS[s.rank - 1] ?? '2';
+const suit = ['♠', '♥', '♣', '♦'][hash(p.id) % 4];
+const red = suit === '♥' || suit === '♦';
+const label = s === shark ? 'The Shark' : s === fish ? 'The Fish' : s.total >= 0 ? 'Shark' : 'Fish';
+
+// hand-drawn running-total chart
+const W = 560, H = 190, px = 30, py = 24;
+const pts = [0, ...s.running];
+const lo = Math.min(0, ...pts), hi = Math.max(0, ...pts), span = hi - lo || 1;
+const x = (i: number) => px + (i * (W - 2 * px)) / Math.max(1, pts.length - 1);
+const y = (v: number) => py + ((hi - v) * (H - 2 * py)) / span;
+const r = rng(p.id + '-chart');
+const pass = () => pts.map((v, i) => `${i ? 'L' : 'M'}${(x(i) + (r() - 0.5) * 3).toFixed(1)} ${(y(v) + (r() - 0.5) * 3.5).toFixed(1)}`).join(' ');
+const end = pts.at(-1)!;
+const chart = `
+  <line x1="${px}" x2="${W - px}" y1="${y(0)}" y2="${y(0)}" stroke="#161616" stroke-width="1.2" stroke-dasharray="5 6" opacity=".5"/>
+  <text x="${px}" y="${y(0) - 7}" font-family="IBM Plex Mono" font-size="10" fill="#5f584c" letter-spacing="1.5">BREAK EVEN</text>
+  <path d="${pass()}" fill="none" stroke="#161616" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="${pass()}" fill="none" stroke="#161616" stroke-width="1.2" opacity=".45" stroke-linejoin="round"/>
+  ${pts.map((v, i) => (i ? `<circle cx="${x(i)}" cy="${y(v)}" r="5.5" fill="${v >= pts[i - 1] ? '#1E9E5A' : '#D7261E'}" stroke="#161616" stroke-width="1.6"/>` : '')).join('')}
+  <text x="${x(pts.length - 1) - 10}" y="${y(end) + (end >= 0 ? -12 : 28)}" text-anchor="end" font-family="Anton" font-size="22" fill="${end >= 0 ? '#1E9E5A' : '#D7261E'}">${money(end)}</text>`;
+---
+<dialog class="pdlg" id={`p-${p.id}`} aria-label={`${p.name}'s player file`}>
+  <div class="pdlg-in">
+    <button class="x" type="button" data-close aria-label="Close">✕</button>
+
+    <div class={`facecard ${red ? 'red' : ''}`}>
+      <div class="corner tl">{rank}<br />{suit}</div>
+      <div class="corner br">{rank}<br />{suit}</div>
+      <div class="fc-inner"><Cutout player={p} /></div>
+      <div class="ribbon">{p.name}</div>
+      {p.nickname && <div class="fc-nick">“{p.nickname}”</div>}
+      <div class={`stamp ${s.total >= 0 ? 'sea' : ''}`}>{label}</div>
+    </div>
+
+    <div class="sh" style="--r:.6deg">
+      <div class="dossier" style={torn('dossier-' + p.id, 'tblr', 6)}>
+        <div class="kicker">Rank #{s.rank} of {count} · {s.gp} game{s.gp === 1 ? '' : 's'} played</div>
+        <h2>{p.name}</h2>
+        {p.bio && <p class="bio">{p.bio}</p>}
+        <div class="statgrid">
+          <div class="stat"><span>Total</span><b class={sign(s.total)}>{money(s.total)}</b></div>
+          <div class="stat"><span>ROI</span><b class={sign(s.roi)}>{pct(s.roi)}</b></div>
+          <div class="stat"><span>Win rate</span><b>{s.winRate}%</b></div>
+          <div class="stat"><span>Best night</span><b class={sign(s.best)}>{money(s.best)}</b></div>
+          <div class="stat"><span>Worst night</span><b class={sign(s.worst)}>{money(s.worst)}</b></div>
+          <div class="stat"><span>Streak</span><b>{s.streak}</b></div>
+        </div>
+        <div class="kicker">Running total, game by game</div>
+        <svg class="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${p.name}'s running total`} set:html={chart} />
+        <table class="log">
+          <thead><tr><th>Game</th><th>In</th><th>Out</th><th>Net</th></tr></thead>
+          <tbody>
+            {[...s.log].reverse().map(l => (
+              <tr>
+                <td>No. {pad3(l.game.no)} · {fmtDate(l.game.date, { month: 'short', day: 'numeric' })}</td>
+                <td>${l.buyin}</td>
+                <td>${l.cashout}</td>
+                <td><Dymo n={l.net} sm /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,10 @@
+date: 2026-10-02
+host: priya
+stakes: "0.25/0.50"
+notes: "Priya flopped a set three times in an hour. Dev showed up 40 minutes late and still cashed."
+results:
+  - { player: jacob, buyin: 40, cashout: 31 }
+  - { player: priya, buyin: 40, cashout: 88 }
+  - { player: dev, buyin: 40, cashout: 55 }
+  - { player: alex, buyin: 80, cashout: 20 }
+  - { player: lena, buyin: 40, cashout: 46 }

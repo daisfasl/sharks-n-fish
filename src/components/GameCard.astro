@@ -1,0 +1,48 @@
+---
+// One game night as a taped-up newspaper clipping with the full ledger.
+import type { Game } from '../lib/data';
+import { headline, playerById } from '../lib/data';
+import { fmtDate, pad3, tilt, torn } from '../lib/paper';
+import Dymo from './Dymo.astro';
+import Sticker from './Sticker.astro';
+
+interface Props { game: Game }
+const { game } = Astro.props;
+const seed = 'game-' + game.id;
+const host = game.host ? playerById.get(game.host) : undefined;
+const winner = game.rows[0].player;
+const loser = game.rows.at(-1)!.player;
+const name = (id: string) => playerById.get(id)!.name;
+---
+<div class="sh taped" style={`--r:${tilt(seed, 1.4)};--tr:${tilt(seed + 't', 6)}`}>
+  <article class={`gcard v${game.no % 3}`} style={torn(seed, 'tblr', 5)}>
+    <div class="gd">Game No. {pad3(game.no)} · {fmtDate(game.date, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</div>
+    <h3>{headline(game)}</h3>
+    <ul class="facts">
+      {host && <li><span>Host</span>{host.name}</li>}
+      {game.location && <li><span>Where</span>{game.location}</li>}
+      {game.stakes && <li><span>Blinds</span>{game.stakes}</li>}
+      <li><span>Players</span>{game.rows.length}</li>
+      <li><span>Pot</span>${game.pot}</li>
+    </ul>
+    <table class="ledger">
+      <thead><tr><th>Player</th><th>In</th><th>Out</th><th>Net</th></tr></thead>
+      <tbody>
+        {game.rows.map(r => (
+          <tr>
+            <td>
+              <button class="plink" type="button" data-player={r.player}>{name(r.player)}</button>
+              {r.player === winner && r.net > 0 && <span class="tag shark-tag" title="Shark of the night"><Sticker kind="fin" /></span>}
+              {r.player === loser && r.net < 0 && <span class="tag fish-tag" title="Fish of the night"><Sticker kind="minifish" /></span>}
+            </td>
+            <td>${r.buyin}</td>
+            <td>${r.cashout}</td>
+            <td><Dymo n={r.net} sm /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {game.rake > 0 && <p class="rake">${game.rake} left the table (rake / snacks)</p>}
+    {game.notes && <p class="notes"><b>Dealer's notes:</b> {game.notes}</p>}
+  </article>
+</div>

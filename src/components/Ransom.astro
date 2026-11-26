@@ -1,0 +1,46 @@
+---
+// Ransom-note title: every letter cut from a different "magazine".
+// A lone "N" becomes a poker chip.
+import { rng, torn } from '../lib/paper';
+interface Props { text: string }
+const { text } = Astro.props;
+
+const looks = [
+  { bg: 'var(--ink)', c: 'var(--paper)', f: 'var(--f-display)' },
+  { bg: 'var(--red)', c: '#fff', f: 'var(--f-heavy)' },
+  { bg: 'var(--news)', c: 'var(--ink)', f: 'var(--f-serif)' },
+  { bg: 'var(--white)', c: 'var(--red)', f: 'var(--f-type)' },
+  { bg: 'var(--sea)', c: '#fff', f: 'var(--f-display)' },
+  { bg: 'var(--gold)', c: 'var(--ink)', f: 'var(--f-heavy)' },
+  { bg: 'var(--kraft)', c: 'var(--ink)', f: 'var(--f-serif)', i: true },
+];
+const r = rng('ransom-' + text);
+let k = 0;
+const words = text.split(' ').map(w =>
+  [...w].map(ch => {
+    const L = looks[(k++ * 3 + Math.floor(r() * 3)) % looks.length];
+    return {
+      ch, L,
+      rot: (r() * 12 - 6).toFixed(1),
+      dy: Math.round(r() * 10 - 5),
+      size: `clamp(${(38 + r() * 6) | 0}px, ${(4.6 + r() * 1.1).toFixed(1)}vw, ${(72 + r() * 14) | 0}px)`,
+      clip: torn(`${text}-${k}`, 'tblr', 3),
+    };
+  }),
+);
+---
+<h1 class="title" aria-label={text}>
+  {words.map(w =>
+    w.length === 1 && w[0].ch === 'N' ? (
+      <span class="word" aria-hidden="true"><span class="stk chip n-chip"><b>N</b></span></span>
+    ) : (
+      <span class="word" aria-hidden="true">
+        {w.map(l => (
+          <span class="sh" style={`--r:${l.rot}deg;top:${l.dy}px`}>
+            <span class="L" style={`background:${l.L.bg};color:${l.L.c};font-family:${l.L.f};${l.L.i ? 'font-style:italic;' : ''}font-size:${l.size};${l.clip}`}>{l.ch}</span>
+          </span>
+        ))}
+      </span>
+    ),
+  )}
+</h1>

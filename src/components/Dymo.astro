@@ -1,0 +1,7 @@
+---
+// Label-maker tape for money amounts: green up, red down.
+import { money, sign } from '../lib/paper';
+interface Props { n: number; sm?: boolean }
+const { n, sm = false } = Astro.props;
+---
+<span class={`dymo ${sign(n)} ${sm ? 'sm' : ''}`}>{money(n)}</span>
