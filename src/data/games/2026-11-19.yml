@@ -1,0 +1,10 @@
+date: 2026-11-19
+title: "first game!"
+stakes: "0.10/0.25"
+results:
+  - { player: korey,  buyin: 50, cashout: 49.45 }
+  - { player: jaden,  buyin: 25, cashout: 54.35 }
+  - { player: andre,  buyin: 25, cashout: 51.50 }
+  - { player: nicole, buyin: 25, cashout: 29.00 }
+  - { player: evan,   buyin: 50, cashout: 12.80 }
+  - { player: jacob,  buyin: 75, cashout: 52.90 }

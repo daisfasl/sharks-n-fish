@@ -1,0 +1,10 @@
+date: 2026-11-25
+title: "kill nicole"
+stakes: "0.25/0.25"
+results:
+  - { player: jaden,  buyin: 50, cashout: 0 }
+  - { player: andre,  buyin: 25, cashout: 0 }
+  - { player: evan,   buyin: 67, cashout: 14.75 }
+  - { player: jacob,  buyin: 75, cashout: 41.50 }
+  - { player: korey,  buyin: 65, cashout: 49.25 }
+  - { player: nicole, buyin: 25, cashout: 201.50 }

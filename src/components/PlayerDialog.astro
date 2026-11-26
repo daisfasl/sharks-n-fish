@@ -2,7 +2,7 @@
 // Pop-up player file: their face card + stats sheet. Opens when a player is clicked.
 import type { Stats } from '../lib/data';
 import { fish, shark } from '../lib/data';
-import { fmtDate, hash, money, pad3, pct, rng, sign, torn } from '../lib/paper';
+import { cents, fmtDate, hash, money, pad3, pct, rng, sign, torn } from '../lib/paper';
 import Cutout from './Cutout.astro';
 import Dymo from './Dymo.astro';
 
@@ -66,8 +66,8 @@ const chart = `
             {[...s.log].reverse().map(l => (
               <tr>
                 <td>No. {pad3(l.game.no)} · {fmtDate(l.game.date, { month: 'short', day: 'numeric' })}</td>
-                <td>${l.buyin}</td>
-                <td>${l.cashout}</td>
+                <td>{cents(l.buyin)}</td>
+                <td>{cents(l.cashout)}</td>
                 <td><Dymo n={l.net} sm /></td>
               </tr>
             ))}

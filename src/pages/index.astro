@@ -7,7 +7,7 @@ import Sticker from '../components/Sticker.astro';
 import GameCard from '../components/GameCard.astro';
 import PlayerDialog from '../components/PlayerDialog.astro';
 import { fish, games, playerById, season, shark, stats } from '../lib/data';
-import { fmtDate, money, pct, tilt, torn } from '../lib/paper';
+import { cash, fmtDate, money, pct, tilt, torn } from '../lib/paper';
 
 const best = season.bestNight, worst = season.worstNight;
 ---
@@ -27,8 +27,8 @@ const best = season.bestNight, worst = season.worstNight;
       {season.games > 0 && (
         <div class="ticker">
           <span>{season.games} games logged</span>
-          <span>${season.moved} changed hands</span>
-          <span>Biggest pot: <em>${season.biggestPot}</em></span>
+          <span>{cash(season.moved)} changed hands</span>
+          <span>Biggest pot: <em>{cash(season.biggestPot)}</em></span>
           {best && <span>Best night: <em>{playerById.get(best.player)!.name} {money(best.net)}</em></span>}
           {worst && <span>Worst night: <em>{playerById.get(worst.player)!.name} {money(worst.net)}</em></span>}
         </div>

@@ -14,15 +14,16 @@ Make a new file in `src/data/games/` named after the date, e.g. `2026-12-04.yml`
 
 ```yaml
 date: 2026-12-04
-host: jacob            # optional: a player id
-location: Jacob's place  # optional
+title: "revenge game"  # optional headline; leave out for an auto-written one
 stakes: "0.25/0.50"    # optional
+location: Jacob's place  # optional
 notes: "Anything funny that happened."   # optional, shows as Dealer's notes
 results:
-  - { player: jacob, buyin: 40, cashout: 92 }   # buyin = total put in, rebuys included
-  - { player: alex,  buyin: 60, cashout: 8 }
-  - { player: priya, buyin: 40, cashout: 40 }
+  - { player: jacob,  buyin: 75, cashout: 52.90 }   # buyin = total put in, rebuys included
+  - { player: nicole, buyin: 25, cashout: 47.10 }
 ```
+
+Cents are fine (`49.45`). Player ids are the file names in `src/data/players/`.
 
 **From your phone:** open the repo on github.com → `src/data/games` → **Add file → Create new
 file** → paste → **Commit changes**. That's it.
@@ -36,9 +37,9 @@ what's wrong, so a typo never reaches the leaderboard. If some money really did 
 
 1. Add `src/data/players/<id>.yml`. The file name is their id, used in game files:
    ```yaml
-   name: Priya
-   nickname: "Pocket Rockets"     # optional
-   bio: "Tight, patient, terrifying."   # optional
+   name: Nicole
+   nickname: "The Closer"     # optional
+   bio: "One line about them."   # optional
    ```
 2. Optional: add a photo as `photos/<id>.png` (see below). Until then they get a drawn stand-in.
 

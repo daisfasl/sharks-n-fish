@@ -1,9 +1,0 @@
-date: 2026-11-07
-host: lena
-stakes: "0.25/0.50"
-notes: "Short-handed night. Sam rebought once and blamed the music."
-results:
-  - { player: priya, buyin: 40, cashout: 70 }
-  - { player: lena, buyin: 40, cashout: 58 }
-  - { player: sam, buyin: 80, cashout: 35 }
-  - { player: alex, buyin: 40, cashout: 37 }
