@@ -29,18 +29,22 @@ export function torn(seed: string, sides = 'tblr', amp = 6, step = 3.5) {
 
 /** Round to cents so 54.35 - 25 doesn't turn into 29.349999. */
 export const round2 = (n: number) => Math.round(n * 100) / 100;
-const amount = (n: number) => Math.abs(round2(n)).toFixed(2);
+const amount = (n: number) =>
+  Math.abs(round2(n)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 /** Signed amount: +$29.35, −$50.00, $0.00 */
 export const money = (n: number) => (round2(n) > 0 ? `+$${amount(n)}` : round2(n) < 0 ? `−$${amount(n)}` : '$0.00');
 /** Plain amount: $307.00, $51.50 */
 export const cash = (n: number) => `$${amount(n)}`;
 /** Always two decimals, for ledger columns: $25.00 */
-export const cents = (n: number) => `$${Math.abs(round2(n)).toFixed(2)}`;
+export const cents = (n: number) => `$${amount(n)}`;
 export const sign = (n: number) => (round2(n) > 0 ? 'pos' : round2(n) < 0 ? 'neg' : 'even');
 export const pct = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n)}%`;
 export const pad3 = (n: number) => String(n).padStart(3, '0');
 export const fmtDate = (d: string, o: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }) =>
   new Date(d + 'T12:00:00').toLocaleDateString('en-US', o);
+
+/** 2026-11-25 -> 11/25/26 */
+export const mmddyy = (d: string) => `${d.slice(5, 7)}/${d.slice(8, 10)}/${d.slice(2, 4)}`;
 
 /** Prefix a path with the site's base (needed on GitHub Pages project sites). */
 export const url = (p: string) => `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${p.replace(/^\//, '')}`;

@@ -2,7 +2,7 @@
 // Pop-up player file: their face card + stats sheet. Opens when a player is clicked.
 import type { Stats } from '../lib/data';
 import { fish, shark } from '../lib/data';
-import { cents, fmtDate, hash, money, pad3, pct, rng, sign, torn } from '../lib/paper';
+import { cents, fmtDate, hash, mmddyy, money, pad3, pct, rng, sign, torn } from '../lib/paper';
 import Cutout from './Cutout.astro';
 import Dymo from './Dymo.astro';
 
@@ -15,22 +15,32 @@ const suit = ['♠', '♥', '♣', '♦'][hash(p.id) % 4];
 const red = suit === '♥' || suit === '♦';
 const label = s === shark ? 'The Shark' : s === fish ? 'The Fish' : s.total >= 0 ? 'Shark' : 'Fish';
 
-// hand-drawn running-total chart
-const W = 560, H = 190, px = 30, py = 24;
+// hand-drawn running-total chart. It always fits the same box: with more games the
+// points get closer together, the dots shrink and then disappear (except the last one),
+// and the wobble calms down so a long line stays readable.
+const W = 560, H = 210, px = 34, top = 26, bottom = 52; // bottom room: end label + date axis
 const pts = [0, ...s.running];
+const n = pts.length - 1; // games played
 const lo = Math.min(0, ...pts), hi = Math.max(0, ...pts), span = hi - lo || 1;
-const x = (i: number) => px + (i * (W - 2 * px)) / Math.max(1, pts.length - 1);
-const y = (v: number) => py + ((hi - v) * (H - 2 * py)) / span;
+const x = (i: number) => px + (i * (W - 2 * px)) / Math.max(1, n);
+const y = (v: number) => top + ((hi - v) * (H - top - bottom)) / span;
+const dot = n <= 12 ? 5.5 : n <= 30 ? 3.5 : 0;
+const wobble = n <= 12 ? 3 : 1.2;
 const r = rng(p.id + '-chart');
-const pass = () => pts.map((v, i) => `${i ? 'L' : 'M'}${(x(i) + (r() - 0.5) * 3).toFixed(1)} ${(y(v) + (r() - 0.5) * 3.5).toFixed(1)}`).join(' ');
+const pass = () => pts.map((v, i) => `${i ? 'L' : 'M'}${(x(i) + (r() - 0.5) * wobble).toFixed(1)} ${(y(v) + (r() - 0.5) * wobble).toFixed(1)}`).join(' ');
 const end = pts.at(-1)!;
+const ink = (v: number, prev: number) => (v >= prev ? '#1E9E5A' : '#D7261E');
+const axis = (i: number, anchor: string) =>
+  `<text x="${x(i)}" y="${H - 2}" text-anchor="${anchor}" font-family="IBM Plex Mono" font-size="10" fill="#5f584c" letter-spacing="1">${fmtDate(s.log[i - 1].game.date, { month: 'short', day: 'numeric' }).toUpperCase()}</text>`;
 const chart = `
   <line x1="${px}" x2="${W - px}" y1="${y(0)}" y2="${y(0)}" stroke="#161616" stroke-width="1.2" stroke-dasharray="5 6" opacity=".5"/>
   <text x="${px}" y="${y(0) - 7}" font-family="IBM Plex Mono" font-size="10" fill="#5f584c" letter-spacing="1.5">BREAK EVEN</text>
   <path d="${pass()}" fill="none" stroke="#161616" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
   <path d="${pass()}" fill="none" stroke="#161616" stroke-width="1.2" opacity=".45" stroke-linejoin="round"/>
-  ${pts.map((v, i) => (i ? `<circle cx="${x(i)}" cy="${y(v)}" r="5.5" fill="${v >= pts[i - 1] ? '#1E9E5A' : '#D7261E'}" stroke="#161616" stroke-width="1.6"/>` : '')).join('')}
-  <text x="${x(pts.length - 1) - 10}" y="${y(end) + (end >= 0 ? -12 : 28)}" text-anchor="end" font-family="Anton" font-size="22" fill="${end >= 0 ? '#1E9E5A' : '#D7261E'}">${money(end)}</text>`;
+  ${dot ? pts.map((v, i) => (i ? `<circle cx="${x(i)}" cy="${y(v)}" r="${dot}" fill="${ink(v, pts[i - 1])}" stroke="#161616" stroke-width="1.6"/>` : '')).join('') : ''}
+  ${dot ? '' : `<circle cx="${x(n)}" cy="${y(end)}" r="5.5" fill="${ink(end, pts[n - 1])}" stroke="#161616" stroke-width="1.6"/>`}
+  ${n >= 2 ? axis(1, 'start') : ''}${axis(n, 'end')}
+  <text x="${x(n) - 10}" y="${y(end) + (end >= 0 ? -12 : 26)}" text-anchor="end" font-family="Anton" font-size="22" fill="${end >= 0 ? '#1E9E5A' : '#D7261E'}">${money(end)}</text>`;
 ---
 <dialog class="pdlg" id={`p-${p.id}`} aria-label={`${p.name}'s player file`}>
   <div class="pdlg-in">
@@ -51,8 +61,15 @@ const chart = `
         <h2>{p.name}</h2>
         {p.bio && <p class="bio">{p.bio}</p>}
         <div class="statgrid">
-          <div class="stat"><span>Total</span><b class={sign(s.total)}>{money(s.total)}</b></div>
-          <div class="stat"><span>ROI</span><b class={sign(s.roi)}>{pct(s.roi)}</b></div>
+          <div class="stat total">
+            <span>Total</span>
+            <b class={sign(s.total)}>{money(s.total)}</b>
+            <dl class="money-line">
+              <div><dt>Bought in</dt><dd>{cents(s.buyins)}</dd></div>
+              <div><dt>Cashed out</dt><dd>{cents(s.buyins + s.total)}</dd></div>
+              <div><dt>ROI</dt><dd class={sign(s.roi)}>{pct(s.roi)}</dd></div>
+            </dl>
+          </div>
           <div class="stat"><span>Win rate</span><b>{s.winRate}%</b></div>
           <div class="stat"><span>Best night</span><b class={sign(s.best)}>{money(s.best)}</b></div>
           <div class="stat"><span>Worst night</span><b class={sign(s.worst)}>{money(s.worst)}</b></div>
@@ -60,12 +77,14 @@ const chart = `
         </div>
         <div class="kicker">Running total, game by game</div>
         <svg class="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${p.name}'s running total`} set:html={chart} />
+        <div class="log-wrap">
         <table class="log">
-          <thead><tr><th>Game</th><th>In</th><th>Out</th><th>Net</th></tr></thead>
+          <thead><tr><th>Game</th><th>Date</th><th>In</th><th>Out</th><th>Net</th></tr></thead>
           <tbody>
             {[...s.log].reverse().map(l => (
               <tr>
-                <td>No. {pad3(l.game.no)} · {fmtDate(l.game.date, { month: 'short', day: 'numeric' })}</td>
+                <td><span class="hide-xs">No. </span>{pad3(l.game.no)}</td>
+                <td>{mmddyy(l.game.date)}</td>
                 <td>{cents(l.buyin)}</td>
                 <td>{cents(l.cashout)}</td>
                 <td><Dymo n={l.net} sm /></td>
@@ -73,6 +92,7 @@ const chart = `
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   </div>

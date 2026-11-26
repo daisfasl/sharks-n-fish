@@ -98,14 +98,24 @@ const top = stats[0], bottom = stats.at(-1);
 export const shark = top && top.total > 0 ? top : undefined;
 export const fish = bottom && bottom.total < 0 ? bottom : undefined;
 
-/* ---------- season numbers for the ticker ---------- */
+/* ---------- season numbers for "By the Numbers" ---------- */
 const allRows = games.flatMap(g => g.rows.map(r => ({ ...r, game: g })));
+const winStreak = (s: Stats) => (s.streak.startsWith('W') ? Number(s.streak.slice(1)) : 0);
 export const season = {
   games: games.length,
+  players: stats.length,
   moved: round2(allRows.filter(r => r.net > 0).reduce((a, r) => a + r.net, 0)),
-  biggestPot: Math.max(0, ...games.map(g => g.pot)),
+  boughtIn: round2(allRows.reduce((a, r) => a + r.buyin, 0)),
+  biggestPot: [...games].sort((a, b) => b.pot - a.pot)[0],
+  avgPot: games.length ? round2(games.reduce((a, g) => a + g.pot, 0) / games.length) : 0,
   bestNight: [...allRows].sort((a, b) => b.net - a.net)[0],
   worstNight: [...allRows].sort((a, b) => a.net - b.net)[0],
+  // biggest return on a single buy-in, e.g. $25 -> $201.50 is 8.06x
+  bestMultiple: [...allRows].filter(r => r.buyin > 0).sort((a, b) => b.cashout / b.buyin - a.cashout / a.buyin)[0],
+  deepestPockets: [...stats].sort((a, b) => b.buyins - a.buyins)[0],
+  busts: allRows.filter(r => r.cashout === 0).length,
+  hotStreak: [...stats].sort((a, b) => winStreak(b) - winStreak(a)).find(s => winStreak(s) >= 2),
+  firstDate: games[0]?.date,
   lastDate: games.at(-1)?.date,
 };
 

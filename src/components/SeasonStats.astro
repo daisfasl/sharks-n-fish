@@ -1,0 +1,57 @@
+---
+// Season stats: small paper scraps of trivia at the bottom of the page.
+// Players named in a stat get a name tag (with their face) that opens their file.
+import type { Player } from '../lib/data';
+import { playerById, season } from '../lib/data';
+import { cash, cents, fmtDate, money, pad3, tilt, torn } from '../lib/paper';
+import Cutout from './Cutout.astro';
+
+const s = season;
+const P = (id: string) => playerById.get(id)!;
+const gameNo = (no: number) => `Game No. ${pad3(no)}`;
+type Tile = { label: string; value: string; who?: Player; sub?: string; tone?: string };
+const tiles: Tile[] = [
+  { label: 'Games played', value: String(s.games), sub: s.firstDate ? `since ${fmtDate(s.firstDate)}` : undefined },
+  { label: 'Players', value: String(s.players), sub: 'have sat down at the table' },
+  { label: 'Changed hands', value: cash(s.moved), sub: 'won off each other' },
+  { label: 'Total bought in', value: cash(s.boughtIn), sub: `avg pot ${cash(s.avgPot)}` },
+  s.biggestPot && { label: 'Biggest pot', value: cash(s.biggestPot.pot), sub: gameNo(s.biggestPot.no) },
+  s.bestNight && s.bestNight.net > 0 && {
+    label: 'Best night', value: money(s.bestNight.net), tone: 'pos',
+    who: P(s.bestNight.player), sub: gameNo(s.bestNight.game.no),
+  },
+  s.worstNight && s.worstNight.net < 0 && {
+    label: 'Worst night', value: money(s.worstNight.net), tone: 'neg',
+    who: P(s.worstNight.player), sub: gameNo(s.worstNight.game.no),
+  },
+  s.bestMultiple && s.bestMultiple.cashout > s.bestMultiple.buyin && {
+    label: 'Biggest multiplier', value: `${(s.bestMultiple.cashout / s.bestMultiple.buyin).toFixed(1)}x`,
+    who: P(s.bestMultiple.player),
+    sub: `${cents(s.bestMultiple.buyin)} → ${cents(s.bestMultiple.cashout)}, ${gameNo(s.bestMultiple.game.no)}`,
+  },
+  s.deepestPockets && {
+    label: 'Deepest pockets', value: cash(s.deepestPockets.buyins), who: s.deepestPockets.player,
+    sub: `bought in across ${s.deepestPockets.gp} game${s.deepestPockets.gp === 1 ? '' : 's'}`,
+  },
+  { label: 'Busts', value: String(s.busts), sub: 'times someone cashed out $0' },
+  s.hotStreak && {
+    label: 'Hot streak', value: s.hotStreak.streak, tone: 'pos', who: s.hotStreak.player,
+  },
+].filter(Boolean) as Tile[];
+---
+<div class="numbers">
+  {tiles.map((t, i) => (
+    <div class="sh" style={`--r:${tilt('num' + t.label, 1.2)}`}>
+      <div class={`num v${i % 3}`} style={torn('num' + t.label, 'tblr', 4)}>
+        <span class="nl">{t.label}</span>
+        <b class={t.tone ?? ''}>{t.value}</b>
+        {t.who && (
+          <button type="button" class="who-tag" data-player={t.who.id} style={`--r:${tilt('tag' + t.label, 2.5)}`}>
+            <span class="who-face mini"><Cutout player={t.who} /></span>{t.who.name}
+          </button>
+        )}
+        {t.sub && <span class="ns">{t.sub}</span>}
+      </div>
+    </div>
+  ))}
+</div>

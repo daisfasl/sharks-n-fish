@@ -6,10 +6,12 @@ import Dymo from '../components/Dymo.astro';
 import Sticker from '../components/Sticker.astro';
 import GameCard from '../components/GameCard.astro';
 import PlayerDialog from '../components/PlayerDialog.astro';
-import { fish, games, playerById, season, shark, stats } from '../lib/data';
-import { cash, fmtDate, money, pct, tilt, torn } from '../lib/paper';
+import SeasonStats from '../components/SeasonStats.astro';
+import { fish, games, season, shark, stats } from '../lib/data';
+import { fmtDate, pct, tilt, torn } from '../lib/paper';
 
-const best = season.bestNight, worst = season.worstNight;
+// newest games shown up front; the rest open with "Show all games"
+const SHOW_GAMES = 6;
 ---
 <Layout>
   <div class="page">
@@ -24,18 +26,10 @@ const best = season.bestNight, worst = season.worstNight;
       </div>
       <Ransom text="SHARKS N FISH" />
       <p class="bubble-row"><span class="bubble">r u a poker shark or fish?</span></p>
-      {season.games > 0 && (
-        <div class="ticker">
-          <span>{season.games} games logged</span>
-          <span>{cash(season.moved)} changed hands</span>
-          <span>Biggest pot: <em>{cash(season.biggestPot)}</em></span>
-          {best && <span>Best night: <em>{playerById.get(best.player)!.name} {money(best.net)}</em></span>}
-          {worst && <span>Worst night: <em>{playerById.get(worst.player)!.name} {money(worst.net)}</em></span>}
-        </div>
-      )}
       <nav class="tabs">
         <a href="#leaderboard" style={`--r:-2deg;${torn('tab1', 'tblr', 4)}`}>Leaderboard</a>
         <a href="#games" style={`--r:1.5deg;${torn('tab2', 'tblr', 4)}`}>Game History</a>
+        {season.games > 0 && <a href="#numbers" style={`--r:-1deg;${torn('tab3', 'tblr', 4)}`}>Stats</a>}
       </nav>
     </header>
 
@@ -103,10 +97,24 @@ const best = season.bestNight, worst = season.worstNight;
 
     <section id="games">
       <div class="sec-head"><span class="ring"><Sticker kind="minifish" /></span><h2>Game History</h2></div>
-      <div class="games">
+      <div class={`games ${games.length > SHOW_GAMES ? 'collapsed' : ''}`} id="games-grid">
         {[...games].reverse().map(g => <GameCard game={g} />)}
       </div>
+      {games.length > SHOW_GAMES && (
+        <p class="more-row">
+          <button type="button" class="more" id="more-games" style={torn('more-games', 'tblr', 4)}>
+            Show all {games.length} games
+          </button>
+        </p>
+      )}
     </section>
+
+    {season.games > 0 && (
+      <section id="numbers">
+        <div class="sec-head sm"><span class="ring"><Sticker kind="chip" color="#D7261E" label="$" style="--s:30px" /></span><h2>Stats</h2></div>
+        <SeasonStats />
+      </section>
+    )}
 
     <footer>
       <span>Sharks n Fish</span>
@@ -135,6 +143,14 @@ const best = season.bestNight, worst = season.worstNight;
     document.querySelectorAll('dialog').forEach(d =>
       d.addEventListener('close', () => history.replaceState(null, '', location.pathname + location.search)),
     );
+    // "Show all games" toggles the older clippings
+    const grid = document.getElementById('games-grid');
+    const more = document.getElementById('more-games');
+    more?.addEventListener('click', () => {
+      const showing = grid!.classList.toggle('collapsed') === false;
+      more.textContent = showing ? 'Show fewer games' : `Show all ${grid!.children.length} games`;
+      if (!showing) document.getElementById('games')!.scrollIntoView();
+    });
     // links like yoursite.com/#jacob open straight to that player's file
     if (location.hash.length > 1) open(decodeURIComponent(location.hash.slice(1)));
   </script>
